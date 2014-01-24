@@ -4,7 +4,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.IO;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using SignNowCSharpExample.SNApi;
 
 namespace SignNowCSharpExample.Controllers
@@ -47,27 +49,43 @@ namespace SignNowCSharpExample.Controllers
                 throw new HttpResponseException(HttpStatusCode.UnsupportedMediaType); 
             }
 
-            //var provider = new MultipartMemoryStreamProvider();
-            //await Request.Content.ReadAsMultipartAsync(provider);
-            //var filename = provider.Contents.First().Headers.ContentDisposition.FileName.Trim('\"');
-            //var buffer = await provider.Contents.First().ReadAsByteArrayAsync();
-
+            string tmp = System.Web.HttpContext.Current.Server.MapPath("~/App_Data/tmp");
             string root = System.Web.HttpContext.Current.Server.MapPath("~/App_Data/uploads");
-            var provider = new MultipartFormDataStreamProvider(root);
+            Directory.CreateDirectory(tmp);
+            Directory.CreateDirectory(root);
+
+            var provider = new MultipartFormDataStreamProvider(tmp);
             
             var task = request.Content.ReadAsMultipartAsync(provider).
                 ContinueWith<SNDocument>(o =>
                 {
-                    // var bytestream = provider.Contents.First().ReadAsByteArrayAsync();
-                    string file = provider.FileData.First().LocalFileName;
+                    var tmpFile = provider.FileData.First().LocalFileName;
+                    var savedFilePath = root + "\\" + DateTime.Now.Ticks + "-" + GetDeserializedFileName(provider.FileData.First());
+                    File.Copy(tmpFile, savedFilePath);
+                    
+                    IEnumerable<string> headerAuthValues = request.Headers.GetValues("Authorization");
+                    string authValue = headerAuthValues.FirstOrDefault();
+                    string accessToken = authValue.Replace("Bearer", "");
 
                     return SignNowApi.CreateDocument(new SNDocument()
                     {
-                        filename = file
+                        filename = savedFilePath,
+                        access_token = accessToken
                     });
                 }
             );
             return task;
+        }
+
+        private string GetDeserializedFileName(MultipartFileData fileData)
+        {
+            var fileName = GetFileName(fileData);
+            return JsonConvert.DeserializeObject(fileName).ToString();
+        }
+
+        public string GetFileName(MultipartFileData fileData)
+        {
+            return fileData.Headers.ContentDisposition.FileName;
         }
     }
 }

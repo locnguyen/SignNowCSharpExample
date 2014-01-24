@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.IO;
 using RestSharp;
 
 namespace SignNowCSharpExample.SNApi
@@ -73,7 +74,13 @@ namespace SignNowCSharpExample.SNApi
                 Resource = "/document"
             };
 
-            request.AddFile("", document.filename);
+            request.AddHeader("Authorization", "Bearer " + document.access_token);
+            request.AddParameter("Content-Type", "multipart/form-data");
+
+            var fileAsBytes = File.ReadAllBytes(document.filename);
+            var fileInfo = new FileInfo(document.filename);
+
+            request.AddFile("file", fileAsBytes, fileInfo.Name);
             return Execute<SNDocument>(request);
         }
 

@@ -134,6 +134,7 @@ App_Data/*.ldf
 
 # Sample app uploads
 App_Data/uploads
+App_Data/tmp
 
 
 #LightSwitch generated files
