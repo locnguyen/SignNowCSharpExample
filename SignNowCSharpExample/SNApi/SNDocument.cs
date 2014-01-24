@@ -8,6 +8,8 @@ namespace SignNowCSharpExample.SNApi
     public class SNDocument
     {
         public int id { get; set; }
-        public String filename { get; set; }
+        public string filename { get; set; }
+
+        public string access_token { get; set; }
     }
 }

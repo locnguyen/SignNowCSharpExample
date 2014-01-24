@@ -73,8 +73,8 @@ namespace SignNowCSharpExample.SNApi
                 Resource = "/document"
             };
 
-            request.AddFile()
-            return null;
+            request.AddFile("", document.filename);
+            return Execute<SNDocument>(request);
         }
 
         private string GetEncodedBasicAuth()

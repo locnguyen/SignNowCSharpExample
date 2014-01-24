@@ -132,6 +132,9 @@ UpgradeLog*.htm
 App_Data/*.mdf
 App_Data/*.ldf
 
+# Sample app uploads
+App_Data/uploads
+
 
 #LightSwitch generated files
 GeneratedArtifacts/
@@ -154,3 +157,4 @@ $RECYCLE.BIN/
 
 # Mac desktop service store files
 .DS_Store
+

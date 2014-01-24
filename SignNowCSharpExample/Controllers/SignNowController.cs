@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Threading.Tasks;
 using SignNowCSharpExample.SNApi;
 
 namespace SignNowCSharpExample.Controllers
@@ -38,9 +39,35 @@ namespace SignNowCSharpExample.Controllers
 
         [ActionName("document")]
         [HttpPost]
-        public SNDocument CreateDocument([FromBody] SNDocument document)
+        public Task<SNDocument> CreateDocument()
         {
-            return new SNDocument();
+            HttpRequestMessage request = this.Request;
+            if (!request.Content.IsMimeMultipartContent())
+            {
+                throw new HttpResponseException(HttpStatusCode.UnsupportedMediaType); 
+            }
+
+            //var provider = new MultipartMemoryStreamProvider();
+            //await Request.Content.ReadAsMultipartAsync(provider);
+            //var filename = provider.Contents.First().Headers.ContentDisposition.FileName.Trim('\"');
+            //var buffer = await provider.Contents.First().ReadAsByteArrayAsync();
+
+            string root = System.Web.HttpContext.Current.Server.MapPath("~/App_Data/uploads");
+            var provider = new MultipartFormDataStreamProvider(root);
+            
+            var task = request.Content.ReadAsMultipartAsync(provider).
+                ContinueWith<SNDocument>(o =>
+                {
+                    // var bytestream = provider.Contents.First().ReadAsByteArrayAsync();
+                    string file = provider.FileData.First().LocalFileName;
+
+                    return SignNowApi.CreateDocument(new SNDocument()
+                    {
+                        filename = file
+                    });
+                }
+            );
+            return task;
         }
     }
 }
