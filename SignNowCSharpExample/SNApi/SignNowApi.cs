@@ -9,7 +9,7 @@ namespace SignNowCSharpExample.SNApi
 {
     public class SignNowApi
     {
-        const string BaseUrl = "http://api.loc.signnow.com";
+        const string BaseUrl = "https://api.loc.signnow.com";
         readonly string _client_id;
         readonly string _client_secret;
 
